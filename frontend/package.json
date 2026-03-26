@@ -1,23 +1,25 @@
 {
   "name": "fashion-designer",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.0",
+  "main": "expo/AppEntry",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "lucide-react": "^0.542.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "expo": "~54.0.0",
+    "react": "19.1.0",
+    "react-native": "0.81.0",
+    "react-native-svg": "15.12.1"
   },
   "devDependencies": {
+    "@expo/cli": "~54.0.0",
     "@types/react": "^19.1.12",
-    "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react-swc": "^4.0.1",
-    "typescript": "^5.9.2",
-    "vite": "^7.1.3"
+    "babel-preset-expo": "~54.0.0",
+    "typescript": "^5.9.2"
   }
 }

@@ -1,0 +1,15 @@
+export const palette = {
+  pageBg: "#f6efe7",
+  panelBg: "#fcf8f3",
+  panelStrong: "#fffdf9",
+  canvasBg: "#f0e6db",
+  border: "#dccfc1",
+  borderStrong: "#c8b29a",
+  text: "#221b17",
+  muted: "#6e6055",
+  accent: "#bc4c62",
+  accentStrong: "#a63c52",
+  accentSoft: "#f5d5dc",
+  white: "#ffffff",
+  shadow: "rgba(70, 46, 30, 0.08)",
+} as const;

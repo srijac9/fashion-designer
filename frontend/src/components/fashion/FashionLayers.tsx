@@ -1,10 +1,6 @@
-import { Eye, EyeOff, Trash2 } from "lucide-react";
-
-export interface Layer {
-  id: string;
-  name: string;
-  visible: boolean;
-}
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { palette } from "../../theme";
+import type { Layer } from "./types";
 
 interface FashionLayersProps {
   layers: Layer[];
@@ -22,47 +18,126 @@ export function FashionLayers({
   onDelete,
 }: FashionLayersProps) {
   return (
-    <section className="panel">
-      <div className="panel-heading">
-        <h2 className="panel-title">Layers</h2>
-        <span className="panel-note">{layers.length} total</span>
-      </div>
+    <View style={styles.panel}>
+      <View style={styles.panelHeading}>
+        <Text style={styles.panelTitle}>Layers</Text>
+        <Text style={styles.panelNote}>{layers.length} total</Text>
+      </View>
 
-      <div className="layer-list">
+      <View style={styles.layerList}>
         {layers.map((layer) => (
-          <div
+          <View
             key={layer.id}
-            className={`layer-item${selectedLayerId === layer.id ? " selected" : ""}`}
+            style={[
+              styles.layerItem,
+              selectedLayerId === layer.id && styles.layerItemSelected,
+            ]}
           >
-            <button
-              type="button"
-              className="icon-button"
-              onClick={() => onToggleVisibility(layer.id)}
-              aria-label={layer.visible ? "Hide layer" : "Show layer"}
+            <Pressable
+              onPress={() => onToggleVisibility(layer.id)}
+              style={styles.sideAction}
             >
-              {layer.visible ? <Eye size={16} /> : <EyeOff size={16} />}
-            </button>
-            <button
-              type="button"
-              className="layer-main"
-              onClick={() => onLayerSelect(layer.id)}
+              <Text style={styles.sideActionText}>
+                {layer.visible ? "Hide" : "Show"}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => onLayerSelect(layer.id)}
+              style={styles.layerMain}
             >
-              <span className="layer-name">{layer.name}</span>
-              <span className="layer-visibility">
+              <Text style={styles.layerName}>{layer.name}</Text>
+              <Text style={styles.layerVisibility}>
                 {layer.visible ? "Visible on canvas" : "Hidden from canvas"}
-              </span>
-            </button>
-            <button
-              type="button"
-              className="icon-button destructive"
-              onClick={() => onDelete(layer.id)}
-              aria-label={`Delete ${layer.name}`}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => onDelete(layer.id)}
+              style={[styles.sideAction, styles.deleteAction]}
             >
-              <Trash2 size={16} />
-            </button>
-          </div>
+              <Text style={[styles.sideActionText, styles.deleteActionText]}>Delete</Text>
+            </Pressable>
+          </View>
         ))}
-      </div>
-    </section>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  panel: {
+    minWidth: 0,
+    padding: 14,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: palette.border,
+    backgroundColor: "rgba(252, 248, 243, 0.96)",
+    gap: 18,
+  },
+  panelHeading: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  panelTitle: {
+    color: palette.text,
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+  },
+  panelNote: {
+    color: palette.muted,
+    fontSize: 11,
+  },
+  layerList: {
+    gap: 10,
+  },
+  layerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#eadbcc",
+    backgroundColor: "#fff9f2",
+  },
+  layerItemSelected: {
+    borderColor: "#efbec8",
+    backgroundColor: "#fff1f3",
+  },
+  sideAction: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: palette.border,
+    backgroundColor: palette.pageBg,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  sideActionText: {
+    color: palette.muted,
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  deleteAction: {
+    backgroundColor: "#fdecef",
+    borderColor: "#f4c6cf",
+  },
+  deleteActionText: {
+    color: palette.accentStrong,
+  },
+  layerMain: {
+    flex: 1,
+    gap: 4,
+  },
+  layerName: {
+    color: palette.text,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  layerVisibility: {
+    color: palette.muted,
+    fontSize: 12,
+  },
+});

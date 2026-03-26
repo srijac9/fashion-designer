@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "fashion-designer",
+    "slug": "fashion-designer",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true
+    }
+  }
+}
