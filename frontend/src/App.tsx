@@ -13,7 +13,14 @@ import { FashionLayers } from "./components/fashion/FashionLayers";
 import { FashionProperties } from "./components/fashion/FashionProperties";
 import { FashionToolbar } from "./components/fashion/FashionToolbar";
 import { FashionTopBar } from "./components/fashion/FashionTopBar";
+import { GenerateButton } from "./components/ui/GenerateButton";
+import { PipelineProgress } from "./components/ui/PipelineProgress";
+import { PreviewScreen } from "./PreviewScreen";
+import { runGarmentPipeline, type PipelineState } from "./pipeline/GarmentPipeline";
+import { designStateToSpec } from "./adapter/PreviewAdapter";
+import type { ModelRenderConfig } from "./api/client";
 import type { Layer, Stroke, Tool, ViewName } from "./components/fashion/types";
+import type { ShirtFit, ShirtSleeveLength, ShirtNeckline, ShirtHemLength, ShirtGarmentSpec } from "./schema/shirt-spec";
 import { palette } from "./theme";
 
 const initialLayers: Layer[] = [
@@ -34,6 +41,13 @@ function App() {
   const [selectedLayerId, setSelectedLayerId] = useState<string>("2");
   const [currentView, setCurrentView] = useState<ViewName>("front");
   const [isDrawing, setIsDrawing] = useState(false);
+
+  // Shirt design state for preview adapter
+  const [shirtFit, setShirtFit] = useState<ShirtFit>("regular");
+  const [shirtSleeveLength, setShirtSleeveLength] = useState<ShirtSleeveLength>("short");
+  const [shirtNeckline, setShirtNeckline] = useState<ShirtNeckline>("crew");
+  const [shirtHemLength, setShirtHemLength] = useState<ShirtHemLength>("regular");
+  const [shirtBaseColor, setShirtBaseColor] = useState("#f5f5f5");
   const [strokesByView, setStrokesByView] = useState<Record<ViewName, Stroke[]>>({
     front: [],
     back: [],
@@ -45,6 +59,13 @@ function App() {
   const [statusMessage, setStatusMessage] = useState(
     "Sketch directly on the mannequin to start your concept.",
   );
+
+  // Pipeline and navigation state
+  const [showPreviewScreen, setShowPreviewScreen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [pipelineState, setPipelineState] = useState<PipelineState | null>(null);
+  const [generatedSpec, setGeneratedSpec] = useState<ShirtGarmentSpec | null>(null);
+  const [generatedModelConfig, setGeneratedModelConfig] = useState<ModelRenderConfig | null>(null);
 
   const activeLayerName = useMemo(() => {
     return layers.find((layer) => layer.id === selectedLayerId)?.name ?? "None";
@@ -164,10 +185,60 @@ function App() {
     setStatusMessage(message);
   };
 
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    setPipelineState({ status: "validate", progress: 0, message: "Starting..." });
+
+    const spec = designStateToSpec({
+      baseColor: shirtBaseColor,
+      fit: shirtFit,
+      sleeveLength: shirtSleeveLength,
+      neckline: shirtNeckline,
+      hemLength: shirtHemLength,
+      frontStrokes: strokesByView.front,
+      backStrokes: strokesByView.back,
+    });
+
+    const result = await runGarmentPipeline(spec, (state) => {
+      setPipelineState(state);
+    });
+
+    setIsGenerating(false);
+    if (result.success && result.spec) {
+      setGeneratedSpec(result.spec);
+      setGeneratedModelConfig(result.modelRenderConfig ?? null);
+      setShowPreviewScreen(true);
+      setStatusMessage("Model preview configuration generated successfully!");
+    } else {
+      setStatusMessage(result.error ?? "Generation failed");
+      setPipelineState(null);
+    }
+  };
+
+  const handleBackToEditor = () => {
+    setShowPreviewScreen(false);
+    setPipelineState(null);
+  };
+
+  const handleEditAgain = () => {
+    setShowPreviewScreen(false);
+    setPipelineState(null);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={palette.panelBg} />
-      <FashionTopBar
+
+      {showPreviewScreen && generatedSpec ? (
+        <PreviewScreen
+          spec={generatedSpec}
+          modelRenderConfig={generatedModelConfig}
+          onBack={handleBackToEditor}
+          onEdit={handleEditAgain}
+        />
+      ) : (
+        <>
+          <FashionTopBar
         selectedTool={selectedTool}
         activeLayerName={activeLayerName}
         currentView={currentView}
@@ -241,6 +312,31 @@ function App() {
                   setOpacity(nextOpacity);
                   setStatusMessage(`Opacity set to ${Math.round(nextOpacity * 100)}%.`);
                 }}
+                shirtFit={shirtFit}
+                onShirtFitChange={(fit) => {
+                  setShirtFit(fit);
+                  setStatusMessage(`Shirt fit set to ${fit}.`);
+                }}
+                shirtSleeveLength={shirtSleeveLength}
+                onShirtSleeveLengthChange={(sleeveLength) => {
+                  setShirtSleeveLength(sleeveLength);
+                  setStatusMessage(`Sleeve length set to ${sleeveLength}.`);
+                }}
+                shirtNeckline={shirtNeckline}
+                onShirtNecklineChange={(neckline) => {
+                  setShirtNeckline(neckline);
+                  setStatusMessage(`Neckline set to ${neckline}.`);
+                }}
+                shirtHemLength={shirtHemLength}
+                onShirtHemLengthChange={(hemLength) => {
+                  setShirtHemLength(hemLength);
+                  setStatusMessage(`Hem length set to ${hemLength}.`);
+                }}
+                shirtBaseColor={shirtBaseColor}
+                onShirtBaseColorChange={(color) => {
+                  setShirtBaseColor(color);
+                  setStatusMessage(`Shirt base color updated to ${color.toUpperCase()}.`);
+                }}
               />
               <FashionLayers
                 layers={layers}
@@ -307,6 +403,31 @@ function App() {
                   setOpacity(nextOpacity);
                   setStatusMessage(`Opacity set to ${Math.round(nextOpacity * 100)}%.`);
                 }}
+                shirtFit={shirtFit}
+                onShirtFitChange={(fit) => {
+                  setShirtFit(fit);
+                  setStatusMessage(`Shirt fit set to ${fit}.`);
+                }}
+                shirtSleeveLength={shirtSleeveLength}
+                onShirtSleeveLengthChange={(sleeveLength) => {
+                  setShirtSleeveLength(sleeveLength);
+                  setStatusMessage(`Sleeve length set to ${sleeveLength}.`);
+                }}
+                shirtNeckline={shirtNeckline}
+                onShirtNecklineChange={(neckline) => {
+                  setShirtNeckline(neckline);
+                  setStatusMessage(`Neckline set to ${neckline}.`);
+                }}
+                shirtHemLength={shirtHemLength}
+                onShirtHemLengthChange={(hemLength) => {
+                  setShirtHemLength(hemLength);
+                  setStatusMessage(`Hem length set to ${hemLength}.`);
+                }}
+                shirtBaseColor={shirtBaseColor}
+                onShirtBaseColorChange={(color) => {
+                  setShirtBaseColor(color);
+                  setStatusMessage(`Shirt base color updated to ${color.toUpperCase()}.`);
+                }}
               />
               <FashionLayers
                 layers={layers}
@@ -329,6 +450,28 @@ function App() {
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>{statusMessage}</Text>
       </View>
+
+      {/* Generate Button - always visible at bottom */}
+      {!showPreviewScreen && (
+        <View style={styles.generateBar}>
+          <GenerateButton
+            onPress={handleGenerate}
+            isGenerating={isGenerating}
+            disabled={strokesByView.front.length === 0 && strokesByView.back.length === 0}
+          />
+        </View>
+      )}
+
+      {/* Pipeline Progress Modal */}
+      {pipelineState && isGenerating && (
+        <View style={styles.pipelineOverlay}>
+          <View style={styles.pipelineModal}>
+            <PipelineProgress state={pipelineState} />
+          </View>
+        </View>
+      )}
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -389,5 +532,26 @@ const styles = StyleSheet.create({
   statusText: {
     color: palette.muted,
     fontSize: 13,
+  },
+  generateBar: {
+    borderTopWidth: 1,
+    borderTopColor: palette.border,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: palette.panelBg,
+  },
+  pipelineOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  pipelineModal: {
+    width: "85%",
+    maxWidth: 400,
   },
 });

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { palette } from "../../theme";
+import type { ShirtFit, ShirtSleeveLength, ShirtNeckline, ShirtHemLength } from "../../schema/shirt-spec";
 
 interface FashionPropertiesProps {
   selectedColor: string;
@@ -9,6 +10,17 @@ interface FashionPropertiesProps {
   onBrushSizeChange: (size: number) => void;
   opacity: number;
   onOpacityChange: (opacity: number) => void;
+  // Shirt attributes for preview
+  shirtFit?: ShirtFit;
+  onShirtFitChange?: (fit: ShirtFit) => void;
+  shirtSleeveLength?: ShirtSleeveLength;
+  onShirtSleeveLengthChange?: (sleeveLength: ShirtSleeveLength) => void;
+  shirtNeckline?: ShirtNeckline;
+  onShirtNecklineChange?: (neckline: ShirtNeckline) => void;
+  shirtHemLength?: ShirtHemLength;
+  onShirtHemLengthChange?: (hemLength: ShirtHemLength) => void;
+  shirtBaseColor?: string;
+  onShirtBaseColorChange?: (color: string) => void;
 }
 
 const palettes = [
@@ -36,6 +48,11 @@ const brushPresets = [
   { label: "Marker", size: 8, opacity: 0.85 },
 ];
 
+const shirtFits: ShirtFit[] = ["slim", "regular", "relaxed"];
+const shirtSleeveLengths: ShirtSleeveLength[] = ["sleeveless", "short", "long"];
+const shirtNecklines: ShirtNeckline[] = ["crew", "v-neck", "polo", "henley"];
+const shirtHemLengths: ShirtHemLength[] = ["cropped", "regular", "extended"];
+
 export function FashionProperties({
   selectedColor,
   onColorChange,
@@ -43,6 +60,16 @@ export function FashionProperties({
   onBrushSizeChange,
   opacity,
   onOpacityChange,
+  shirtFit = "regular",
+  onShirtFitChange,
+  shirtSleeveLength = "short",
+  onShirtSleeveLengthChange,
+  shirtNeckline = "crew",
+  onShirtNecklineChange,
+  shirtHemLength = "regular",
+  onShirtHemLengthChange,
+  shirtBaseColor = "#f5f5f5",
+  onShirtBaseColorChange,
 }: FashionPropertiesProps) {
   const [customColor, setCustomColor] = useState(selectedColor);
 
@@ -190,6 +217,150 @@ export function FashionProperties({
             style={styles.colorInput}
             value={customColor.toUpperCase()}
           />
+        </View>
+      </View>
+
+      {/* Shirt Attributes Section */}
+      <View style={styles.shirtSection}>
+        <View style={styles.shirtSectionHeader}>
+          <Text style={styles.shirtSectionTitle}>Shirt</Text>
+          <Text style={styles.shirtSectionNote}>Preview attributes</Text>
+        </View>
+
+        {/* Base Color */}
+        <View style={styles.fieldGroup}>
+          <View style={styles.fieldLabel}>
+            <Text style={styles.fieldLabelText}>Base color</Text>
+          </View>
+          <View style={styles.paletteGrid}>
+            {["#ffffff", "#f5f5f5", "#e8e8e8", "#d0d0d0", "#1a1a1a", "#2c3e50", "#8b4513", "#f5deb3"].map((color) => (
+              <Pressable
+                key={color}
+                onPress={() => onShirtBaseColorChange?.(color)}
+                style={[
+                  styles.colorSwatch,
+                  { backgroundColor: color },
+                  shirtBaseColor === color && styles.colorSwatchSelected,
+                ]}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Fit */}
+        <View style={styles.fieldGroup}>
+          <View style={styles.fieldLabel}>
+            <Text style={styles.fieldLabelText}>Fit</Text>
+          </View>
+          <View style={styles.optionRow}>
+            {shirtFits.map((fit) => (
+              <Pressable
+                key={fit}
+                onPress={() => onShirtFitChange?.(fit)}
+                style={[
+                  styles.optionButton,
+                  shirtFit === fit && styles.optionButtonActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    shirtFit === fit && styles.optionButtonTextActive,
+                  ]}
+                >
+                  {fit}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* Sleeve Length */}
+        <View style={styles.fieldGroup}>
+          <View style={styles.fieldLabel}>
+            <Text style={styles.fieldLabelText}>Sleeves</Text>
+          </View>
+          <View style={styles.optionRow}>
+            {shirtSleeveLengths.map((sleeve) => (
+              <Pressable
+                key={sleeve}
+                onPress={() => onShirtSleeveLengthChange?.(sleeve)}
+                style={[
+                  styles.optionButton,
+                  shirtSleeveLength === sleeve && styles.optionButtonActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    shirtSleeveLength === sleeve && styles.optionButtonTextActive,
+                  ]}
+                >
+                  {sleeve}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* Neckline */}
+        <View style={styles.fieldGroup}>
+          <View style={styles.fieldLabel}>
+            <Text style={styles.fieldLabelText}>Neckline</Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.optionScrollRow}
+          >
+            {shirtNecklines.map((neck) => (
+              <Pressable
+                key={neck}
+                onPress={() => onShirtNecklineChange?.(neck)}
+                style={[
+                  styles.optionButton,
+                  shirtNeckline === neck && styles.optionButtonActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    shirtNeckline === neck && styles.optionButtonTextActive,
+                  ]}
+                >
+                  {neck}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Hem Length */}
+        <View style={styles.fieldGroup}>
+          <View style={styles.fieldLabel}>
+            <Text style={styles.fieldLabelText}>Hem</Text>
+          </View>
+          <View style={styles.optionRow}>
+            {shirtHemLengths.map((hem) => (
+              <Pressable
+                key={hem}
+                onPress={() => onShirtHemLengthChange?.(hem)}
+                style={[
+                  styles.optionButton,
+                  shirtHemLength === hem && styles.optionButtonActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    shirtHemLength === hem && styles.optionButtonTextActive,
+                  ]}
+                >
+                  {hem}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
       </View>
     </View>
@@ -370,6 +541,60 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     color: palette.text,
     fontSize: 14,
+    fontWeight: "700",
+  },
+  shirtSection: {
+    marginTop: 6,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: palette.border,
+    gap: 16,
+  },
+  shirtSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  shirtSectionTitle: {
+    color: palette.text,
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+  },
+  shirtSectionNote: {
+    color: palette.muted,
+    fontSize: 11,
+  },
+  optionRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  optionScrollRow: {
+    flexDirection: "row",
+    gap: 8,
+    paddingRight: 8,
+  },
+  optionButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: palette.border,
+    backgroundColor: palette.white,
+  },
+  optionButtonActive: {
+    backgroundColor: palette.accentSoft,
+    borderColor: palette.accent,
+  },
+  optionButtonText: {
+    color: palette.text,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  optionButtonTextActive: {
+    color: palette.accent,
     fontWeight: "700",
   },
 });
